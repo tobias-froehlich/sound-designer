@@ -1,3 +1,8 @@
+# Images and WAV files
+
+*.png
+*.wav
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
