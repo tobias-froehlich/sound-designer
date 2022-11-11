@@ -1,11 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+from primeFactors import getFactors
 from const import *
 dpi = 1024 # Dieser Wert muesste fuer das abgespeicherte Ergebnis egal sein,
          # und nur die Anzeige beeinflussen, wenn man eine mit pl.show() macht.
 #         image = pl.imread("structure.png")
-py = int(MAX_FREQUENCY)
+py = int(MAX_FREQUENCY / FREQUENCY_RESOLUTION)
 px = int(LENGTH_IN_SECONDS / TIME_RESOLUTION)
 #fig = plt.figure(figsize=(px/np.float(dpi), py/np.float(dpi)), dpi=dpi)
 #ax = fig.add_axes([0, 0, 1, 1])
@@ -23,9 +24,28 @@ px = int(LENGTH_IN_SECONDS / TIME_RESOLUTION)
 
 a = np.zeros((py, px, 3), 'float32')
 
-for marker in FREQUENCY_MARKER:
-    roundedMarker = round(marker)
+frequency_markers = []
+for n in range(1, 1024):
+    factors = getFactors(n)
+    print(n, factors)
+    marker = 110.0
+    for factor in factors:
+        if factor == 2:
+            marker *= FACTOR_TWO
+        elif factor == 3:
+            marker *= FACTOR_THREE
+        elif factor == 5:
+            marker *= FACTOR_FIVE
+        elif factor == 7:
+            marker *= FACTOR_SEVEN
+        else:
+            marker *= 0
+    if marker > 0:
+        frequency_markers.append(marker)
+
+for marker in frequency_markers:
+    roundedMarker = round(marker/FREQUENCY_RESOLUTION)
     if roundedMarker < py:
-        a[round(marker),:,:] = 1.0
+        a[roundedMarker,:,:] = 1.0
 
 matplotlib.image.imsave('bla.png', a, vmin=0.0, vmax=1.0, cmap='Greys', origin='lower')
