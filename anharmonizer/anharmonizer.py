@@ -50,7 +50,7 @@ class Anharmonizer:
         indexes_with_high_amplitude = np.array(range(len(amplitudes)))[amplitudes >= maximum * 0.05]
         firstPeakIndex = amplitudes[:int(indexes_with_high_amplitude[0] * 1.5)].argmax()
         peakFrequencies = [self.__findPeak(self.__frequencies[firstPeakIndex], amplitudes)]
-        for i in range(2, 32 + 1):
+        for i in range(2, 64 + 1):
             if i == 2:
                 expectedFrequency = 2 * peakFrequencies[-1]
             else:
@@ -103,8 +103,27 @@ class Anharmonizer:
         self.__targetFrequencies = []
         baseFrequency = self.__peakFrequencies[0]
         inverseExponent = 1.0 / STRETCH_EXPONENT
+        
+        sourceFrequencies = [ baseFrequency * (frequency / baseFrequency)**inverseExponent for frequency in self.__peakFrequencies]
+        sourceFrequencyStuetzpunkte = [0.0]
+        targetFrequencyStuetzpunkte = [0.0]
+        for i in range(len(sourceFrequencies)):
+            sourceFrequencyStuetzpunkte.append(sourceFrequencies[i] - 10.0)
+            targetFrequencyStuetzpunkte.append(self.__peakFrequencies[i] - 10.0)
+            sourceFrequencyStuetzpunkte.append(sourceFrequencies[i] + 10.0)
+            targetFrequencyStuetzpunkte.append(self.__peakFrequencies[i] + 10.0)
+            
+        sourceFrequencyStuetzpunkte.append(self.__sampleRate)
+        targetFrequencyStuetzpunkte.append(self.__sampleRate)
+
+        for i in range(len(sourceFrequencyStuetzpunkte)):
+            plt.plot([sourceFrequencyStuetzpunkte[i], targetFrequencyStuetzpunkte[i]], [0, 1], "b")
+        plt.show()
+
+
         def f(frequency):
-            return baseFrequency * (frequency / baseFrequency)**inverseExponent
+#            return baseFrequency * (frequency / baseFrequency)**inverseExponent
+             return np.interp(frequency, targetFrequencyStuetzpunkte, sourceFrequencyStuetzpunkte)
         reL = []
         imL = []
         reR = []
@@ -122,6 +141,13 @@ class Anharmonizer:
         reR = np.interp(f(self.__frequencies), self.__frequencies, self.__reSpectrumR)
         imR = np.interp(f(self.__frequencies), self.__frequencies, self.__imSpectrumR)
         
+        plt.subplot(211)
+        plt.plot(self.__frequencies, self.__reSpectrumL)
+        plt.subplot(212)
+        plt.plot(self.__frequencies, reL)
+        plt.show()
+
+
         zeroArray = np.zeros((max(0, missingLength),))
         reL = np.concatenate([reL, zeroArray])
         imL = np.concatenate([imL, zeroArray])
@@ -152,6 +178,7 @@ class Anharmonizer:
 
 if __name__ == "__main__":
     filenames = os.listdir("input_data")
+    filenames = ["sample_057.wav"]
     for filename in filenames:
         print(filename)
         anharmonizer = Anharmonizer(filename, 10, 20000.0)
