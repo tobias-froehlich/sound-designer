@@ -1,3 +1,7 @@
+# directories
+anharmonizer/input_data/
+anharmonizer/output_data/
+
 # Images and WAV files
 
 *.png
